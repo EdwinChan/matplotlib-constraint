@@ -34,7 +34,9 @@ class ConstraintLayout:
   @staticmethod
   def place_on_grid(rects, nx, ny, sx, sy, include_size=True):
     if nx * ny != len(rects):
-      raise ValueError('number of rectangles cannot fill grid')
+      raise ValueError(
+        'grid of size ({}, {}) cannot be filled with {} rectangles'
+        .format(nx, ny, len(rects)))
 
     if isinstance(sx, str) or not hasattr(sx, '__iter__'):
       sx = [sx]
@@ -204,4 +206,4 @@ def parse_length(string):
   for unit, conversion in units.items():
     if string.endswith(unit):
       return float(string[:-len(unit)]) * conversion
-  raise ValueError('string does not represent a length')
+  raise ValueError("string '{}' does not represent a length".format(string))
