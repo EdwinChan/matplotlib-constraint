@@ -32,7 +32,7 @@ class ConstraintLayout:
       first_rect.dy.set_equal(rect.dy)
 
   @staticmethod
-  def place_on_grid(rects, nx, ny, sx, sy):
+  def place_on_grid(rects, nx, ny, sx, sy, include_size=True):
     if nx * ny != len(rects):
       raise ValueError('number of rectangles cannot fill grid')
 
@@ -51,10 +51,16 @@ class ConstraintLayout:
         if i > 0:
           above_rect = rects[(i-1)*nx+j]
           rect.x1.set_equal(above_rect.x1)
-          rect.y1.set_equal(above_rect.y2 + sy_)
+          if include_size:
+            rect.y1.set_equal(above_rect.y2 + sy_)
+          else:
+            rect.y1.set_equal(above_rect.y1 + sy_)
         elif j > 0:
           left_rect = rects[i*nx+(j-1)]
-          rect.x1.set_equal(left_rect.x2 + sx_)
+          if include_size:
+            rect.x1.set_equal(left_rect.x2 + sx_)
+          else:
+            rect.x1.set_equal(left_rect.x1 + sx_)
           rect.y1.set_equal(left_rect.y1)
 
   def add_constraint(self, lhs, rhs):
