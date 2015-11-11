@@ -5,19 +5,21 @@ import numpy.linalg
 import weakref
 
 class ConstraintLayout:
-  def __init__(self, axes_count):
+  def __init__(self, axes_count, length_count=0):
     rect_count = axes_count + 1
     self.coord_count = 4 * rect_count
+    length_count += self.coord_count
 
-    coeffs_list = numpy.eye(self.coord_count, self.coord_count+1)
+    coeffs_list = numpy.eye(length_count, length_count+1)
     length_exprs = [LengthExpr(self, coeffs) for coeffs in coeffs_list]
 
     self.figure = Rectangle(length_exprs[:4])
     self.axes = [Rectangle(length_expr_tuple) for
-      length_expr_tuple in iterate_tuple(length_exprs[4:], 4)]
+      length_expr_tuple in iterate_tuple(length_exprs[4:self.coord_count], 4)]
+    self.lengths = length_exprs[self.coord_count:]
 
-    self.lhs = numpy.empty((self.coord_count, self.coord_count))
-    self.rhs = numpy.empty(self.coord_count)
+    self.lhs = numpy.empty((length_count, length_count))
+    self.rhs = numpy.empty(length_count)
     self.lhs[:2] = self.rhs[:2] = 0
     self.lhs[0, 0] = self.lhs[1, 1] = 1
     self.curr_constraint = 2
@@ -81,7 +83,7 @@ class ConstraintLayout:
     except numpy.linalg.LinAlgError:
       raise ValueError('constraints are singular')
 
-    self.coords = list(iterate_tuple(solution, 4))
+    self.coords = list(iterate_tuple(solution[:self.coord_count], 4))
 
     for n ,coords in enumerate(self.coords):
       print('{} | {:7.4f} {:7.4f} {:7.4f} {:7.4f} | {:7.4f} {:7.4f}'.format(
