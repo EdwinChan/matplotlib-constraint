@@ -20,8 +20,8 @@ def example_2():
   top_axes = layout.axes[len(layout.axes)//2:]
 
   layout.figure.dx.set_equal('10in')
-  bx = layout.axes[0].x1 - layout.figure.x1
-  by = layout.axes[0].y1 - layout.figure.y1
+  bx = main_axes[0].x1 - layout.figure.x1
+  by = top_axes[0].y1 - layout.figure.y1
   bx.set_equal(by)
   (layout.figure.x2 - main_axes[-1].x2).set_equal(bx)
   (layout.figure.y2 - main_axes[-1].y2).set_equal(by)
