@@ -15,6 +15,31 @@ def example_1():
   return layout
 
 def example_2():
+  layout = mpllayout.ConstraintLayout(8)
+  main_axes = layout.axes[:len(layout.axes)//2]
+  inset_axes = layout.axes[len(layout.axes)//2:]
+
+  layout.figure.dx.set_equal('10in')
+  (main_axes[0].x1 - layout.figure.x1).set_equal(0.1 * layout.figure.dx)
+  (main_axes[0].y1 - layout.figure.y1).set_equal(0.1 * layout.figure.dy)
+  (layout.figure.x2 - main_axes[-1].x2).set_equal(0.1 * layout.figure.dx)
+  (layout.figure.y2 - main_axes[-1].y2).set_equal(0.1 * layout.figure.dy)
+
+  layout.set_same_size(main_axes)
+  layout.set_same_size(inset_axes)
+  main_axes[0].dy.set_equal(0.8 * main_axes[0].dx)
+  inset_axes[0].dx.set_equal('1in')
+  inset_axes[0].dy.set_equal(inset_axes[0].dx)
+
+  layout.place_on_grid(main_axes, 2, 2, 0, 0)
+  layout.place_on_grid(inset_axes, 2, 2,
+    main_axes[0].dx, main_axes[0].dy, False)
+  (inset_axes[0].x1 - main_axes[0].x1).set_equal(0.1 * main_axes[0].dy)
+  (inset_axes[0].y1 - main_axes[0].y1).set_equal(0.1 * main_axes[0].dy)
+
+  return layout
+
+def example_3():
   layout = mpllayout.ConstraintLayout(8, 3)
   main_axes = layout.axes[:len(layout.axes)//2]
   top_axes = layout.axes[len(layout.axes)//2:]
@@ -42,7 +67,7 @@ def example_2():
 
   return layout
 
-def example_3():
+def example_4():
   layout = mpllayout.ConstraintLayout(32)
   main_axes = layout.axes[:len(layout.axes)//2]
   bottom_axes = layout.axes[len(layout.axes)//2:]
@@ -68,7 +93,7 @@ def example_3():
 
   return layout
 
-def example_4():
+def example_5():
   layout = mpllayout.ConstraintLayout(16)
 
   layout.figure.dx.set_equal('10in')
@@ -93,7 +118,7 @@ def example_4():
 
   return layout
 
-def example_5():
+def example_6():
   layout = mpllayout.ConstraintLayout(9)
 
   layout.figure.dx.set_equal('10in')
@@ -134,3 +159,4 @@ if __name__ == '__main__':
   show_example(example_3())
   show_example(example_4())
   show_example(example_5())
+  show_example(example_6())
