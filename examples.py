@@ -17,7 +17,7 @@ def example_1():
 def example_2():
   layout = mpllayout.ConstraintLayout(8)
   main_axes = layout.axes[:len(layout.axes)//2]
-  side_axes = layout.axes[len(layout.axes)//2:]
+  top_axes = layout.axes[len(layout.axes)//2:]
 
   layout.figure.dx.set_equal('10in')
   bx = layout.axes[0].x1 - layout.figure.x1
@@ -27,27 +27,27 @@ def example_2():
   (layout.figure.y2 - main_axes[-1].y2).set_equal(by)
 
   layout.set_same_size(main_axes)
-  layout.set_same_size(side_axes)
+  layout.set_same_size(top_axes)
   main_axes[0].dx.set_equal(0.4 * layout.figure.dx)
   main_axes[0].dy.set_equal(main_axes[0].dx)
-  side_axes[0].x1.set_equal(main_axes[0].x1 + 0.2 * main_axes[0].dx)
-  side_axes[0].x2.set_equal(main_axes[0].x2 - 0.2 * main_axes[0].dx)
-  side_axes[0].dy.set_equal('0.3in')
+  top_axes[0].x1.set_equal(main_axes[0].x1 + 0.2 * main_axes[0].dx)
+  top_axes[0].x2.set_equal(main_axes[0].x2 - 0.2 * main_axes[0].dx)
+  top_axes[0].dy.set_equal('0.3in')
 
   layout.place_on_grid(main_axes, 2, 2,
     0.5*bx,
-    main_axes[0].y2 - side_axes[0].y1 + 0.5*by - main_axes[0].dy)
-  layout.place_on_grid(side_axes, 2, 2,
-    main_axes[0].dx + 0.5*bx - side_axes[0].dx,
-    main_axes[0].y2 - side_axes[0].y1 + 0.5*by - side_axes[0].dy)
-  side_axes[0].y2.set_equal(main_axes[0].y1 - '0.1in')
+    main_axes[0].y2 - top_axes[0].y1 + 0.5*by - main_axes[0].dy)
+  layout.place_on_grid(top_axes, 2, 2,
+    main_axes[0].dx + 0.5*bx - top_axes[0].dx,
+    main_axes[0].y2 - top_axes[0].y1 + 0.5*by - top_axes[0].dy)
+  top_axes[0].y2.set_equal(main_axes[0].y1 - '0.1in')
 
   return layout
 
 def example_3():
   layout = mpllayout.ConstraintLayout(32)
   main_axes = layout.axes[:len(layout.axes)//2]
-  side_axes = layout.axes[len(layout.axes)//2:]
+  bottom_axes = layout.axes[len(layout.axes)//2:]
 
   layout.figure.dx.set_equal('10in')
   (layout.axes[0].x1 - layout.figure.x1).set_equal('1in')
@@ -56,17 +56,17 @@ def example_3():
   (layout.figure.y2 - layout.axes[-1].y2).set_equal('1in')
 
   layout.set_same_size(main_axes)
-  layout.set_same_size(side_axes)
+  layout.set_same_size(bottom_axes)
   main_axes[0].dy.set_equal(main_axes[0].dx)
-  side_axes[0].dx.set_equal(main_axes[0].dx)
-  side_axes[0].dy.set_equal(0.2 * main_axes[0].dy)
+  bottom_axes[0].dx.set_equal(main_axes[0].dx)
+  bottom_axes[0].dy.set_equal(0.2 * main_axes[0].dy)
 
   layout.place_on_grid(main_axes, 4, 4,
-    ['0in', '0.5in'], [side_axes[0].dy, side_axes[0].dy + '0.5in'])
-  layout.place_on_grid(side_axes, 4, 4,
+    ['0in', '0.5in'], [bottom_axes[0].dy, bottom_axes[0].dy + '0.5in'])
+  layout.place_on_grid(bottom_axes, 4, 4,
     ['0in', '0.5in'], [main_axes[0].dy, main_axes[0].dy + '0.5in'])
-  side_axes[0].x1.set_equal(main_axes[0].x1)
-  side_axes[0].y1.set_equal(main_axes[0].y2)
+  bottom_axes[0].x1.set_equal(main_axes[0].x1)
+  bottom_axes[0].y1.set_equal(main_axes[0].y2)
 
   return layout
 

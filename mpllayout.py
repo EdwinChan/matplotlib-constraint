@@ -7,14 +7,20 @@ import weakref
 class ConstraintLayout:
   def __init__(self, axes_count):
     rect_count = axes_count + 1
-    self.figure = Rectangle(self, rect_count, 0)
-    self.axes = [Rectangle(self, rect_count, i) for i in range(1, rect_count)]
+    self.coord_count = 4 * rect_count
 
-    self.lhs = numpy.empty((4*rect_count, 4*rect_count))
-    self.rhs = numpy.empty(4*rect_count)
+    coeffs_list = numpy.eye(self.coord_count, self.coord_count+1)
+    length_exprs = [LengthExpr(self, coeffs) for coeffs in coeffs_list]
+
+    self.figure = Rectangle(length_exprs[:4])
+    self.axes = [Rectangle(length_expr_tuple) for
+      length_expr_tuple in iterate_tuple(length_exprs[4:], 4)]
+
+    self.lhs = numpy.empty((self.coord_count, self.coord_count))
+    self.rhs = numpy.empty(self.coord_count)
     self.lhs[:2] = self.rhs[:2] = 0
     self.lhs[0, 0] = self.lhs[1, 1] = 1
-    self.curr_equation = 2
+    self.curr_constraint = 2
 
   @staticmethod
   def set_same_size(rects):
@@ -49,18 +55,18 @@ class ConstraintLayout:
           rect.x1.set_equal(left_rect.x2 + sx_)
           rect.y1.set_equal(left_rect.y1)
 
-  def add_equation(self, lhs, rhs):
-    if self.curr_equation >= self.lhs.shape[0]:
+  def add_constraint(self, lhs, rhs):
+    if self.curr_constraint >= self.lhs.shape[0]:
       raise ValueError('too many constraints have been specified')
 
-    self.lhs[self.curr_equation] = lhs
-    self.rhs[self.curr_equation] = rhs
-    self.curr_equation += 1
+    self.lhs[self.curr_constraint] = lhs
+    self.rhs[self.curr_constraint] = rhs
+    self.curr_constraint += 1
 
   def solve(self):
-    if self.curr_equation < self.lhs.shape[0]:
+    if self.curr_constraint < self.lhs.shape[0]:
       raise ValueError('{} more constraint(s) must be specified'
-        .format(self.lhs.shape[0] - self.curr_equation))
+        .format(self.lhs.shape[0] - self.curr_constraint))
 
     try:
       singular_values = numpy.linalg.svd(self.lhs, compute_uv=False)
@@ -75,7 +81,7 @@ class ConstraintLayout:
     except numpy.linalg.LinAlgError:
       raise ValueError('constraints are singular')
 
-    self.coords = list(itertools.zip_longest(*[iter(solution)]*4))
+    self.coords = list(iterate_tuple(solution, 4))
 
     for n ,coords in enumerate(self.coords):
       print('{} | {:7.4f} {:7.4f} {:7.4f} {:7.4f} | {:7.4f} {:7.4f}'.format(
@@ -96,18 +102,11 @@ class ConstraintLayout:
 
     for x1, y1, x2, y2 in self.coords[1:]:
       figure.add_axes(
-        [x1/figure_dx, 1-y2/figure_dy, (x2-x1)/figure_dx, (y2-y1)/figure_dy])
+        (x1/figure_dx, 1-y2/figure_dy, (x2-x1)/figure_dx, (y2-y1)/figure_dy))
 
 class Rectangle:
-  def __init__(self, layout, rect_count, rect_index):
-    self.x1 = LengthExpr(layout, numpy.zeros(4*rect_count+1))
-    self.y1 = LengthExpr(layout, numpy.zeros(4*rect_count+1))
-    self.x2 = LengthExpr(layout, numpy.zeros(4*rect_count+1))
-    self.y2 = LengthExpr(layout, numpy.zeros(4*rect_count+1))
-    self.x1.coeffs[4*rect_index] = 1
-    self.y1.coeffs[4*rect_index+1] = 1
-    self.x2.coeffs[4*rect_index+2] = 1
-    self.y2.coeffs[4*rect_index+3] = 1
+  def __init__(self, length_exprs):
+    self.x1, self.y1, self.x2, self.y2 = length_exprs
     self.dx = self.x2 - self.x1
     self.dy = self.y2 - self.y1
 
@@ -179,14 +178,17 @@ class LengthExpr:
   def set_equal(self, other):
     if isinstance(other, LengthExpr):
       coeffs = self.coeffs - other.coeffs
-      self.layout().add_equation(coeffs[:-1], -coeffs[-1])
+      self.layout().add_constraint(coeffs[:-1], -coeffs[-1])
     elif isinstance(other, numbers.Number):
-      self.layout().add_equation(self.coeffs[:-1], other - self.coeffs[-1])
+      self.layout().add_constraint(self.coeffs[:-1], other - self.coeffs[-1])
     elif isinstance(other, str):
       return self.set_equal(parse_length(other))
     else:
       raise TypeError("length cannot be set equal to type '{}'"
         .format(type(other).__name__))
+
+def iterate_tuple(iterable, count):
+  return itertools.zip_longest(*[iter(iterable)] * count)
 
 def parse_length(string):
   units = {'in': 1, 'cm': 1/2.54, 'pt': 1/72}
